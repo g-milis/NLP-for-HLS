@@ -5,18 +5,21 @@ os.environ["OMP_NUM_THREADS"] = '1'
 import torch
 import numpy as np
 from glob import glob
-import matplotlib.pyplot as plt
 from os.path import join as pjoin
 from sklearn.manifold import TSNE
-from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from transformers import AutoModel, AutoTokenizer
 
-import data_parser
-from visualize import annotated_plot
+import data
+import visualize
 
 
-# Config
+# Select whether to process dataset by keeping code labels or
+# read the whole files and let the tokenizer truncate them
+PROCESS = True
+
+# Utilities
+note = '_original' if not PROCESS else ''
 path = os.path.dirname(os.path.realpath(__file__))
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -48,7 +51,7 @@ datafiles = [
 ]
 
 # Read files
-code_dataset = [data_parser.read_file(file, process=True) for file in datafiles]
+code_dataset = [data.read_file(file, process=PROCESS) for file in datafiles]
 
 # Check that we don't have any empty strings in the dataset
 assert not [data for data in code_dataset if data[0] == '']
@@ -74,22 +77,48 @@ encodings = np.concatenate(encodings)
 # Visualize =============================================================================
 # Apply PCA
 pca = PCA(3).fit_transform(encodings).astype('double')
-annotated_plot(pca, annotations, "Encodings after 3D PCA", pjoin(path, 'images', "PCA.pdf"))
+visualize.annotated_plot(
+    pca,
+    annotations,
+    "Encodings after 3D PCA",
+    pjoin(path, 'images', f"PCA{note}.pdf")
+)
+visualize.interactive_svg(
+    pca,
+    annotations,
+    "Encodings after 3D PCA",
+    pjoin(path, 'images', f"PCA{note}.svg")
+)
+
 # Apply t-SNE
 np.random.seed(1)
 tsne = TSNE(3).fit_transform(encodings).astype('double')
-annotated_plot(tsne, annotations, "Encodings after 3D t-SNE", pjoin(path, 'images', "tSNE.pdf"))
+visualize.annotated_plot(
+    tsne,
+    annotations,
+    "Encodings after 3D t-SNE",
+    pjoin(path, 'images', f"tSNE{note}.pdf")
+)
+visualize.interactive_svg(
+    tsne,
+    annotations,
+    "Encodings after 3D t-SNE",
+    pjoin(path, 'images', f"tSNE{note}.svg")
+)
 
-# # Cluster with k-means
-# kmeans = KMeans(n_clusters=5, n_init='auto')
-# labels = kmeans.fit_predict(pca)
-
-# # Getting the Centroids
-# centroids = kmeans.cluster_centers_
-# u_labels = np.unique(labels)
- 
-# for i in u_labels:
-#     plt.scatter(pca[labels == i, 0] , pca[labels == i, 1] , label=i)
-# plt.scatter(centroids[:, 0], centroids[:, 1], s=80, color='k')
-# plt.legend()
-# plt.show()
+# Cluster with k-means
+for k in range(2, 6):
+    visualize.k_means_plot(
+        k,
+        pca,
+        annotations,
+        f"{k}-means clustering of 3D PCA",
+        pjoin(path, 'images', f"PCA_{k}{note}.pdf")
+    )
+    visualize.k_means_plot(
+        k,
+        tsne,
+        annotations,
+        f"{k}-means clustering of 3D t-SNE",
+        pjoin(path, 'images', f"tSNE_{k}{note}.pdf")
+    )

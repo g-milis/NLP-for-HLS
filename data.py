@@ -4,10 +4,6 @@ import os
 import re
 
 
-# Config
-path = os.path.dirname(os.path.realpath(__file__))
-
-
 # Text processing functions =============================================================
 def sanitize(string):
     """ Remove comments and includes/pragmas. """

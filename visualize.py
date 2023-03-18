@@ -1,13 +1,18 @@
 import mplcursors
+import numpy as np
+from io import BytesIO
 import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+import xml.etree.ElementTree as ET
 
 
-def annotated_plot(data, text, title, filepath):
+def annotated_plot(data, text, title, filepath, show=False):
     x, y, z = data[:, 0], data[:, 1], data[:, 2]
     plt.figure()
     scatter = plt.scatter(x, y, c=z)
-    plt.grid()
     bar = plt.colorbar(scatter)
+    plt.grid()
+    plt.title(title)
     plt.xlabel("Component 1")
     plt.ylabel("Component 2")
     bar.ax.set_ylabel("Component 3")
@@ -18,62 +23,69 @@ def annotated_plot(data, text, title, filepath):
     def on_add(sel):
         sel.annotation.set(text=text[sel.index])
 
-    plt.title(title)
     plt.savefig(filepath, bbox_inches='tight')
+    if show: plt.show()
 
 
-if __name__ == '__main__':
-    """From https://matplotlib.org/stable/gallery/user_interfaces/svg_tooltip_sgskip.html"""
-    import matplotlib.pyplot as plt
-    import xml.etree.ElementTree as ET
-    from io import BytesIO
+def k_means_plot(k, data, text, title, filepath, show=False):
+    plt.figure()
+    kmeans = KMeans(n_clusters=k, n_init='auto')
+    labels = kmeans.fit_predict(data)
+    u_labels = np.unique(labels)
+
+    for i in u_labels:
+        scatter = plt.scatter(data[labels == i, 0], data[labels == i, 1])
+        cursor = mplcursors.cursor(scatter, hover=True)
+    
+        # For annotation on hover
+        @cursor.connect("add")
+        def on_add(sel):
+            sel.annotation.set(text=text[sel.index])
+
+    # Getting the Centroids
+    centroids = kmeans.cluster_centers_
+    plt.scatter(centroids[:, 0], centroids[:, 1], s=100, color='k', marker='P')
+    plt.grid()
+    plt.title(title)
+    plt.xlabel("Component 1")
+    plt.ylabel("Component 2")
+    plt.savefig(filepath, bbox_inches='tight')
+    if show: plt.show()
+
+
+def interactive_svg(data, text, title, filepath):
+    """ From https://matplotlib.org/stable/gallery/user_interfaces/svg_tooltip_sgskip.html """
 
     ET.register_namespace("", "http://www.w3.org/2000/svg")
-
-    fig, ax = plt.subplots()
-
-    # Create patches to which tooltips will be assigned.
-    rect1 = plt.Rectangle((10, -20), 10, 5, fc='blue')
-    rect2 = plt.Rectangle((-20, 15), 10, 5, fc='green')
-
-    shapes = [rect1, rect2]
-    labels = ['This is a blue rectangle.', 'This is a green rectangle']
-
-    for i, (item, label) in enumerate(zip(shapes, labels)):
-        patch = ax.add_patch(item)
-        annotate = ax.annotate(labels[i], xy=item.get_xy(), xytext=(0, 0),
-                            textcoords='offset points', color='w', ha='center',
-                            fontsize=8, bbox=dict(boxstyle='round, pad=.5',
-                                                    fc=(.1, .1, .1, .92),
-                                                    ec=(1., 1., 1.), lw=1,
-                                                    zorder=1))
-
-        ax.add_patch(patch)
-        patch.set_gid(f'mypatch_{i:03d}')
-        annotate.set_gid(f'mytooltip_{i:03d}')
-
+    x, y, z = data[:, 0], data[:, 1], data[:, 2]
+    plt.figure()
+    # Scatter data in color
+    color_scatter = plt.scatter(x, y, c=z)   
+    bar = plt.colorbar(color_scatter)
+    # Scatter data in almost-transparent points to add annotations
+    for i, label in enumerate(text):
+        scatter = plt.scatter(x[i], y[i], c='b', alpha=0.01)
+        annotate = plt.annotate(label, xy=np.array([x[i] + 0.05, y[i] + 0.05]))
+        scatter.set_gid(f'point_{i:03d}')
+        annotate.set_gid(f'tooltip_{i:03d}')
+    plt.grid()
+    plt.title(title)
+    plt.xlabel("Component 1")
+    plt.ylabel("Component 2")
+    bar.ax.set_ylabel("Component 3")
     # Save the figure in a fake file object
-    ax.set_xlim(-30, 30)
-    ax.set_ylim(-30, 30)
-    ax.set_aspect('equal')
-
     f = BytesIO()
     plt.savefig(f, format="svg")
-
-    # --- Add interactivity ---
 
     # Create XML tree from the SVG file.
     tree, xmlid = ET.XMLID(f.getvalue())
     tree.set('onload', 'init(event)')
-
-    for i in shapes:
-        # Get the index of the shape
-        index = shapes.index(i)
+    for i in range(len(text)):
         # Hide the tooltips
-        tooltip = xmlid[f'mytooltip_{index:03d}']
+        tooltip = xmlid[f'tooltip_{i:03d}']
         tooltip.set('visibility', 'hidden')
         # Assign onmouseover and onmouseout callbacks to patches.
-        mypatch = xmlid[f'mypatch_{index:03d}']
+        mypatch = xmlid[f'point_{i:03d}']
         mypatch.set('onmouseover', "ShowTooltip(this)")
         mypatch.set('onmouseout', "HideTooltip(this)")
 
@@ -83,27 +95,26 @@ if __name__ == '__main__':
         <![CDATA[
 
         function init(event) {
-            if ( window.svgDocument == null ) {
+            if (window.svgDocument == null) {
                 svgDocument = event.target.ownerDocument;
-                }
             }
+        }
 
         function ShowTooltip(obj) {
             var cur = obj.id.split("_")[1];
-            var tip = svgDocument.getElementById('mytooltip_' + cur);
+            var tip = svgDocument.getElementById('tooltip_' + cur);
             tip.setAttribute('visibility', "visible")
-            }
+        }
 
         function HideTooltip(obj) {
             var cur = obj.id.split("_")[1];
-            var tip = svgDocument.getElementById('mytooltip_' + cur);
+            var tip = svgDocument.getElementById('tooltip_' + cur);
             tip.setAttribute('visibility', "hidden")
-            }
+        }
 
         ]]>
         </script>
         """
-
     # Insert the script at the top of the file and save it.
     tree.insert(0, ET.XML(script))
-    ET.ElementTree(tree).write('svg_tooltip.svg')
+    ET.ElementTree(tree).write(filepath)
