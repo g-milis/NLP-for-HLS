@@ -1,0 +1,13 @@
+TYPE r2[UNROLL_SIZE];
+TYPE u2[UNROLL_SIZE];
+TYPE fs[UNROLL_SIZE];
+TYPE vij[UNROLL_SIZE];
+TYPE fxij[UNROLL_SIZE];
+TYPE fyij[UNROLL_SIZE];
+TYPE fzij[UNROLL_SIZE];
+TYPE d[UNROLL_SIZE][POS_DIM];
+int neighborOffset[FULL_NEIGHBOR_COUNT][3] = {{-1,-1,-1}, { 0,-1,-1}, { 1,-1,-1}, {-1, 0,-1}, { 0, 0,-1}, { 1, 0,-1}, {-1, 1,-1}, { 0, 1,-1}, { 1, 1,-1}, {-1,-1, 0}, { 0,-1, 0}, { 1,-1, 0}, {-1, 0, 0}, { 0, 0, 0}, { 1, 0, 0}, {-1, 1, 0}, { 0, 1, 0}, { 1, 1, 0}, {-1,-1, 1}, { 0,-1, 1}, { 1,-1, 1}, {-1, 0, 1}, { 0, 0, 1}, { 1, 0, 1}, {-1, 1, 1}, { 0, 1, 1}, { 1, 1, 1}};
+TYPE local_A_pos_i[NUMBER_PAR_PER_BOX][POS_DIM];
+TYPE local_B_pos_i[NUMBER_PAR_PER_BOX][POS_DIM];
+TYPE local_B_q_i[NUMBER_PAR_PER_BOX];
+TYPE local_pos_o[NUMBER_PAR_PER_BOX][POS_DIM];

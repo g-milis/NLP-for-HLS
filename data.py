@@ -58,18 +58,24 @@ def isolate_labels(string, indices):
     return new_string
 
 
-def read_file(file, process=False):
-    """ Reads and cleans the content of code files.
-    If process=True, it only keeps the labeled parts. """
+def process_file(file):
+    """ Processes content of code files, keeping the labeled parts. """
     foldername = file.split(os.sep)[-2]
     with open(file, "r", encoding="utf-8") as f:
         code = sanitize(f.read())
-        if process:
-            try:
-                indices = label_indices(code)
-                code = isolate_labels(code, indices)
-            except Exception:
-                print("Warning: Code in", foldername, "left unchanged.")
+        try:
+            indices = label_indices(code)
+            code = isolate_labels(code, indices)
+        except Exception:
+            print("Warning: Code in", foldername, "left unchanged.")
+    return code
+
+
+def read_file(file):
+    """ Reads and cleans the content of code files. """
+    foldername = file.split(os.sep)[-2]
+    with open(file, "r", encoding="utf-8") as f:
+        code = sanitize(f.read())
         code = code.replace('\n', ' ')
         code = ' '.join(code.strip().split())
     return code, foldername

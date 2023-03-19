@@ -16,7 +16,7 @@ import visualize
 
 # Select whether to process dataset by keeping code labels or
 # read the whole files and let the tokenizer truncate them
-PROCESS = True
+PROCESS = False
 
 # Utilities
 note = '_original' if not PROCESS else ''
@@ -45,13 +45,19 @@ def encode(token_ids, model=model):
 
 
 # Dataset ===============================================================================
-datafiles = [
-    file for file in glob(pjoin(path, 'dataset', '*', '*.c*'))
-    if not file.endswith(('harness.c', 'support.c'))
-]
+if PROCESS:
+    datafiles = [
+        file for file in glob(pjoin(path, 'dataset', '*', 'processed.cpp'))
+        if not file.endswith(('harness.c', 'support.c'))
+    ]
+else:
+    datafiles = [
+        file for file in glob(pjoin(path, 'dataset', '*', '*.c*'))
+        if not file.endswith(('harness.c', 'support.c', 'processed.cpp'))
+    ]
 
 # Read files
-code_dataset = [data.read_file(file, process=PROCESS) for file in datafiles]
+code_dataset = [data.read_file(file) for file in datafiles]
 
 # Check that we don't have any empty strings in the dataset
 assert not [data for data in code_dataset if data[0] == '']

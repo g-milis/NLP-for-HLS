@@ -1,3 +1,6 @@
 __pycache__/
-dataset/*
-!dataset/README.md
+dataset/**/kernel_info.txt
+dataset/**/*.json
+dataset/**/*.h
+dataset/**/harness.c
+dataset/**/*support.c
