@@ -1,6 +1,6 @@
 """ Reads the data, extracts model features and visualizes the results. """
 import os
-# Fix for KMeans memory leak on Windows...
+# Fix for KMeans memory leak on Windows
 os.environ["OMP_NUM_THREADS"] = '1'
 
 import torch
@@ -84,12 +84,6 @@ encodings = np.concatenate(encodings)
 # Visualize =============================================================================
 # Apply PCA
 pca = PCA(3).fit_transform(encodings).astype('double')
-visualize.annotated_plot(
-    pca,
-    annotations,
-    "Encodings after 3D PCA",
-    pjoin(path, 'images', f"PCA{note}.pdf")
-)
 visualize.interactive_svg(
     pca,
     annotations,
@@ -98,14 +92,8 @@ visualize.interactive_svg(
 )
 
 # Apply t-SNE
-np.random.seed(1)
+np.random.seed(100)
 tsne = TSNE(3).fit_transform(encodings).astype('double')
-visualize.annotated_plot(
-    tsne,
-    annotations,
-    "Encodings after 3D t-SNE",
-    pjoin(path, 'images', f"tSNE{note}.pdf")
-)
 visualize.interactive_svg(
     tsne,
     annotations,
@@ -114,7 +102,7 @@ visualize.interactive_svg(
 )
 
 # Cluster with k-means
-for k in range(2, 6):
+for k in range(2, 7):
     visualize.k_means_plot(
         k,
         pca,

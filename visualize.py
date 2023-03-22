@@ -7,27 +7,6 @@ from sklearn.cluster import KMeans
 import xml.etree.ElementTree as ET
 
 
-def annotated_plot(data, text, title, filepath, show=False):
-    x, y, z = data[:, 0], data[:, 1], data[:, 2]
-    plt.figure()
-    scatter = plt.scatter(x, y, c=z)
-    bar = plt.colorbar(scatter)
-    plt.grid()
-    plt.title(title)
-    plt.xlabel("Component 1")
-    plt.ylabel("Component 2")
-    bar.ax.set_ylabel("Component 3")
-    cursor = mplcursors.cursor(scatter, hover=True)
-    
-    # For annotation on hover
-    @cursor.connect("add")
-    def on_add(sel):
-        sel.annotation.set(text=text[sel.index])
-
-    plt.savefig(filepath, bbox_inches='tight')
-    if show: plt.show()
-
-
 def k_means_plot(k, data, text, title, filepath, show=False):
     plt.figure()
     kmeans = KMeans(n_clusters=k, n_init='auto')
