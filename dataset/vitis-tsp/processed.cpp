@@ -1,42 +1,21 @@
-
-
-
-constexpr long int factorial(const int N)
-{
-    long int ret = 1;
-    for(int i = 0 ; i < N; ++i)
+for(int i = 0 ; i < N; ++i) {
       ret = ret * (i+1);
-    return ret;
 }
-
-
-
-template<typename T>
-unsigned int getDistance(const T perm[N], const uint16_t distances[N][N])
-{
-  unsigned int ret = 0;
-  for(int i = 0; i < N-1; ++i)
+for(int i = 0; i < N-1; ++i) {
     ret += distances[perm[i]][perm[i+1]];
-  return ret;
-
 }
-
-
-auto compute(const unsigned long int i_, const uint16_t distances[N][N])
-{
-  
-  unsigned long int i = i_;
-  int perm[N] = {0};
-
-              for (int k = 0; k < N; ++k) {
+int perm[N] = {0};
+for (int k = 0; k < N; ++k) {
     perm[k] = i / factorial(N - 1 - k);
     i = i % factorial(N - 1 - k);
   }
-
-  for (char k = N - 1; k > 0; --k)
-    for (char j = k - 1; j >= 0; --j)
+for (char k = N - 1; k > 0; --k) {
+L6:    for (char j = k - 1; j >= 0; --j)
       perm[k] += (perm[j] <= perm[k]);
-
+}
+for (char j = k - 1; j >= 0; --j)
+      perm[k] += (perm[j] <= perm[k]);
+}
               
   std::cout << "getDistance: "<< getDistance(perm,distances) << std::endl;
 
@@ -48,12 +27,12 @@ auto compute(const unsigned long int i_, const uint16_t distances[N][N])
 void tsp(hls::stream<uint16_t>& streamDistances, unsigned int& shortestDistance)
 {
         
-    uint16_t distances_0[N][N];
-    uint16_t distances_1[N][N];
-    uint16_t distances_2[N][N];
-    uint16_t distances_3[N][N];
+L7:    uint16_t distances_0[N][N];
+L8:  uint16_t distances_1[N][N];
+L9:   uint16_t distances_2[N][N];
+L10:    uint16_t distances_3[N][N];
                 
-        loop_distances: for (int i = 0; i < N*N; ++i)
+    L11:    loop_distances: for (int i = 0; i < N*N; ++i)
     {
         uint16_t val;
         streamDistances >> val;
@@ -68,7 +47,7 @@ void tsp(hls::stream<uint16_t>& streamDistances, unsigned int& shortestDistance)
     unsigned int candidate1 = std::numeric_limits<unsigned int>::max();
     unsigned int candidate2 = std::numeric_limits<unsigned int>::max();
     unsigned int candidate3 = std::numeric_limits<unsigned int>::max();
-    loop_compute: for( unsigned long int i_ = 0; i_ < factorialN; i_ += 4 )
+L12:    loop_compute: for( unsigned long int i_ = 0; i_ < factorialN; i_ += 4 )
     {
       candidate0 = std::min(candidate0, compute(i_+0, distances_0));
       candidate1 = std::min(candidate1, compute(i_+1, distances_1));

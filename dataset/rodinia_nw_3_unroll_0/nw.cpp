@@ -42,7 +42,7 @@ void needwun(char SEQA[ALEN], char SEQB[BLEN],
     }
 
     // Matrix filling loop
-    fill_out: for(b_idx=1; b_idx<(BLEN+1); b_idx++){
+L1:    fill_out: for(b_idx=1; b_idx<(BLEN+1); b_idx++){
 	    M_latter[0] = M_former[0] + GAP_SCORE;
 	    ptr[b_idx*(ALEN+1)] = SKIPA;
         fill_in: for(a_idx=1; a_idx<(ALEN+1); a_idx++){
@@ -81,7 +81,7 @@ void needwun(char SEQA[ALEN], char SEQB[BLEN],
     a_str_idx = 0;
     b_str_idx = 0;
 
-    trace: while(a_idx>0 || b_idx>0) {
+L2:    trace: while(a_idx>0 || b_idx>0) {
         r = b_idx*(ALEN+1);
         if (ptr[r + a_idx] == ALIGN){
             alignedA[a_str_idx++] = SEQA[a_idx-1];
@@ -102,10 +102,10 @@ void needwun(char SEQA[ALEN], char SEQB[BLEN],
     }
 
     // Pad the result
-    pad_a: for( ; a_str_idx<ALEN+BLEN; a_str_idx++ ) {
+L3:    pad_a: for( ; a_str_idx<ALEN+BLEN; a_str_idx++ ) {
       alignedA[a_str_idx] = '_';
     }
-    pad_b: for( ; b_str_idx<ALEN+BLEN; b_str_idx++ ) {
+L4:    pad_b: for( ; b_str_idx<ALEN+BLEN; b_str_idx++ ) {
       alignedB[b_str_idx] = '_';
     }
 }
