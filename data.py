@@ -1,20 +1,11 @@
-""" This file contains all the processing functions needed to prepare
-the code dataset. It also contains the file lists. """
+""" Contains all the processing functions for the code dataset. """
 import os
 import re
 
 
-# Text processing functions =============================================================
 def sanitize(string):
     """ Remove comments and includes/pragmas. """
     return re.sub('//.*?\n|/\*.*?\*/|#.*?\n', '', string, flags=re.S)
-
-
-def count_labels(file):
-    """ Find the last label and keep only its index. """
-    with open(file, "r", encoding="utf-8") as f:
-        n = f.readlines()[-1].split(',')[0].removeprefix('L')
-    return int(n)
 
 
 def match_brackets(string):
@@ -36,13 +27,13 @@ def label_indices(string):
     indices = []
     lines = string.split('\n')
     for i, line in enumerate(lines):
-        if line.startswith(f'L{idx}:'):
+        if f'L{idx}:' in line:
             indices.append(i)
             idx += 1
     if not indices:
         raise Exception
     return indices
-        
+
 
 def isolate_labels(string, indices):
     lines = string.split('\n')
@@ -79,3 +70,26 @@ def read_file(file):
         code = code.replace('\n', ' ')
         code = ' '.join(code.strip().split())
     return code, foldername
+
+
+def write_file(text, filename):
+    with open(filename, 'w') as f:
+        f.write(text)
+
+
+if __name__ == '__main__':
+    import os
+    from glob import glob
+    from os.path import join as pjoin
+
+    path = os.path.dirname(os.path.realpath(__file__))
+
+    datafiles = [
+        file for file in glob(pjoin(path, 'dataset', '*', '*.cp*'))
+        if not file.endswith(('harness.c', 'support.c', 'processed.cpp'))
+    ]
+
+    for file in datafiles:
+        code, folder = read_file(file)
+        code = process_file(file)
+        write_file(code, pjoin(path, 'dataset', folder, 'processed.cpp'))

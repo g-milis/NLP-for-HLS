@@ -88,3 +88,44 @@ L30:                                 for (k = 0; k < BSIZE; k++){
                         perimeter_store(result, top_buffer, left_buffer, offset, chunk_idx);
 
     }
+for(i = 0; i < BSIZE; i++){
+L32:        for(j = 0; j < BSIZE; j++){
+            top[i * BSIZE + j]  = result[matrix_dim * (i + offset) + j + j_global];
+        }
+    }
+for(i = 0; i < BSIZE; i++){
+L34:        for(j = 0; j < BSIZE; j++){
+            left[i * BSIZE + j] = result[matrix_dim * (i + i_global) + offset + j];
+        }
+    }
+for(i = 0; i < BSIZE; i++){
+L36:        for(j = 0; j < BSIZE; j++){
+            inner[i * BSIZE + j] = result[matrix_dim * (i + i_global) + j + j_global];
+        }
+    }
+for(i = 0; i < BSIZE; i++){
+L38:        for(j = 0; j < BSIZE; j++){
+            result[matrix_dim * (i + i_global) + j + j_global] = inner[i * BSIZE + j];
+        }
+    }
+float inner_buffer[BSIZE * BSIZE];
+for  (chunk_idx = 0; chunk_idx < 100 ; chunk_idx++){
+        internal_load(result, top_buffer, left_buffer, inner_buffer, offset, chunk_idx, chunk_num);
+
+L43:        for (i = 0; i < BSIZE; i++){
+L44:            for (j = 0; j < BSIZE; j++){
+                float sum = 0.0f;
+                L45:                for (k = 0; k < BSIZE; k++){
+                    sum += left_buffer[BSIZE * i + k] * top_buffer[BSIZE * k + j];
+                }
+                inner_buffer[i * BSIZE + j] -= sum;
+            }
+        }
+
+        internal_store(result, inner_buffer, offset, chunk_idx, chunk_num);
+    }
+for(int i = 0; i < matrix_dim - BSIZE; i += BSIZE){
+        lud_diagonal(result, i);
+        lud_perimeter(result, i);
+        lud_internal(result, i);
+    }

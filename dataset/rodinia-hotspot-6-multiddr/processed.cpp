@@ -32,3 +32,65 @@ L13:            for (j = 0; j < GRID_COLS * 2 / PARA_FACTOR; j++) {
             temp_rf[k][GRID_COLS * 2 / PARA_FACTOR] = temp[GRID_COLS * 2 + (i + 1) * PARA_FACTOR + k];
         }
     }
+float result_inner_0 [TILE_ROWS * GRID_COLS];
+float temp_inner_0 [(TILE_ROWS + 2) * GRID_COLS];
+float power_inner_0 [TILE_ROWS * GRID_COLS];
+float result_inner_1 [TILE_ROWS * GRID_COLS];
+float temp_inner_1 [(TILE_ROWS + 2) * GRID_COLS];
+float power_inner_1 [TILE_ROWS * GRID_COLS];
+float result_inner_2 [TILE_ROWS * GRID_COLS];
+float temp_inner_2 [(TILE_ROWS + 2) * GRID_COLS];
+float power_inner_2 [TILE_ROWS * GRID_COLS];
+for (i = 0; i < SIM_TIME/2; i++) {
+L24:        for (k = 0; k < GRID_ROWS / TILE_ROWS + 2; k++) {
+            int load_flag = k >= 0 && k < GRID_ROWS / TILE_ROWS;
+            int compute_flag = k >= 1 && k < GRID_ROWS / TILE_ROWS + 1;
+            int store_flag = k >= 2 && k < GRID_ROWS / TILE_ROWS + 2;
+            
+            if (k % 3 == 0) {
+                buffer_load_temp(load_flag, k, temp_inner_0, temp);
+                buffer_load_power(load_flag, k, power_inner_0, power);
+
+                buffer_compute(compute_flag, result_inner_2, temp_inner_2, power_inner_2, Cap_1, Rx_1, Ry_1, Rz_1, k - 1);
+                buffer_store(store_flag, k - 2, result, result_inner_1);
+            } else if (k % 3 == 1) {
+                buffer_load_temp(load_flag, k, temp_inner_1, temp);
+                buffer_load_power(load_flag, k, power_inner_1, power);
+
+                buffer_compute(compute_flag, result_inner_0, temp_inner_0, power_inner_0, Cap_1, Rx_1, Ry_1, Rz_1, k - 1);
+                buffer_store(store_flag, k - 2, result, result_inner_2);
+            } else {
+                buffer_load_temp(load_flag, k, temp_inner_2, temp);
+                buffer_load_power(load_flag, k, power_inner_2, power);
+
+                buffer_compute(compute_flag, result_inner_1, temp_inner_1, power_inner_1, Cap_1, Rx_1, Ry_1, Rz_1, k - 1);
+                buffer_store(store_flag, k - 2, result, result_inner_0);
+            }
+        }
+
+L25:        for (k = 0; k < GRID_ROWS / TILE_ROWS + 2; k++) {
+            int load_flag = k >= 0 && k < GRID_ROWS / TILE_ROWS;
+            int compute_flag = k >= 1 && k < GRID_ROWS / TILE_ROWS + 1;
+            int store_flag = k >= 2 && k < GRID_ROWS / TILE_ROWS + 2;
+            
+            if (k % 3 == 0) {
+                                buffer_load_temp(load_flag, k, temp_inner_0, result);
+                buffer_load_power(load_flag, k, power_inner_0, power);
+
+                buffer_compute(compute_flag, result_inner_2, temp_inner_2, power_inner_2, Cap_1, Rx_1, Ry_1, Rz_1, k - 1);
+                buffer_store(store_flag, k - 2, temp, result_inner_1);
+            } else if (k % 3 == 1) {
+                buffer_load_temp(load_flag, k, temp_inner_1, result);
+                buffer_load_power(load_flag, k, power_inner_1, power);
+
+                buffer_compute(compute_flag, result_inner_0, temp_inner_0, power_inner_0, Cap_1, Rx_1, Ry_1, Rz_1, k - 1);
+                buffer_store(store_flag, k - 2, temp, result_inner_2);
+            } else {
+                buffer_load_temp(load_flag, k, temp_inner_2, result);
+                buffer_load_power(load_flag, k, power_inner_2, power);
+
+                buffer_compute(compute_flag, result_inner_1, temp_inner_1, power_inner_1, Cap_1, Rx_1, Ry_1, Rz_1, k - 1);
+                buffer_store(store_flag, k - 2, temp, result_inner_0);
+            }
+        }
+    }

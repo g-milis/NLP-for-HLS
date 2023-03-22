@@ -1,5 +1,6 @@
+""" Reads the data, extracts model features and visualizes the results. """
 import os
-# Suppress KMeans memory leak
+# Fix for KMeans memory leak on Windows...
 os.environ["OMP_NUM_THREADS"] = '1'
 
 import torch
@@ -24,9 +25,9 @@ path = os.path.dirname(os.path.realpath(__file__))
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Define the model repo and download model and tokenizer
-model_name = "microsoft/codebert-base" 
-model = AutoModel.from_pretrained(model_name).to(device)
+model_name = "microsoft/codebert-base"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModel.from_pretrained(model_name).to(device)
 
 
 # Model utility functions ===============================================================
@@ -38,7 +39,7 @@ def tokenize_code(code, tokenizer=tokenizer):
     return tokens, tokens_ids
 
 def encode(token_ids, model=model):
-    """ Encodings have shape [batch_size, seq_length, enc_dim=768]. We keep only 
+    """ Encodings have shape [batch_size, seq_length, enc_dim=768]. We keep only
     the 1st element of the sequence axis, which is the classification encoding. """
     encodings = model(token_ids)[0]
     return encodings[:, 0, :]

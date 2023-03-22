@@ -1,3 +1,4 @@
+""" Contains plotting and visualization utility functions. """
 import mplcursors
 import numpy as np
 from io import BytesIO

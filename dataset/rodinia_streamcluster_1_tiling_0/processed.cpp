@@ -1,16 +1,4 @@
-extern "C" {
-
-void load(int i, float* coord, float* weight, float* cost, int* assign,
-			float* buffer_coord, float* buffer_weight, float* buffer_cost, int* buffer_assign){
-		memcpy(buffer_coord, coord + i * DIM, BUF_SIZE * DIM * sizeof(float));
-	memcpy(buffer_weight, weight + i, BUF_SIZE * sizeof(float));
-	memcpy(buffer_cost, cost + i, BUF_SIZE * sizeof(float));
-	memcpy(buffer_assign, assign + i, BUF_SIZE * sizeof(int));
-}
-
-void compute(int num, int k, float* coord, float* weight, float* target, float* cost, int * assign, 
-		int* center_table, char* switch_membership, float* cost_of_opening_x, float* work_mem, float* x_cost){
-	L1:	pre:for(int i = 0; i < BUF_SIZE; i++){
+for(int i = 0; i < BUF_SIZE; i++){
 		float sum = 0;
 L2:		for(int j = 0; j < DIM; j++){
 			float a = coord[i * DIM + j] - target[j];
@@ -18,8 +6,7 @@ L2:		for(int j = 0; j < DIM; j++){
 		}
 		x_cost[i] = sum * weight[i];
 	}
-
-L3:	after:for(int i = 0; i < BUF_SIZE; i++){
+for(int i = 0; i < BUF_SIZE; i++){
 		float current_cost = x_cost[i] - cost[i];
 		int local_center_index = center_table[assign[i]];
 
@@ -30,60 +17,18 @@ L3:	after:for(int i = 0; i < BUF_SIZE; i++){
 			work_mem[local_center_index] -= current_cost;
 		}
 	}
-}
-
-void store(int num, int numcenter, float* work_mem, char* switch_membership, float* cost_of_opening_x,
-			float* buffer_work_mem, char* buffer_switch_membership, float* buffer_cost_of_opening_x){
-	memcpy(work_mem, buffer_work_mem, BATCH_SIZE * sizeof(float));
-	memcpy(switch_membership, buffer_switch_membership, BATCH_SIZE * sizeof(char));
-	cost_of_opening_x[0] = buffer_cost_of_opening_x[0];
-}
-
-void workload(    
-    float* coord,                      
-    float* weight,                      
-    float* cost, 
-    float* target,
-    int* assign,
-    int* center_table,
-    char* switch_membership,
-    float* work_mem,
-    int num,
-    float* cost_of_opening_x,
-    int numcenter            
-)
-{
-                                    
-                                                
-L4:	float buffer_target[DIM];
-L5:	int buffer_center_table[BATCH_SIZE];
-	
-L6:	float buffer_work_mem[BATCH_SIZE];
-L7:	char buffer_switch_membership[BATCH_SIZE];
-L8:	float buffer_cost_of_opening_x[1];
-	buffer_cost_of_opening_x[0] = cost_of_opening_x[0];
-
-L9:	int buffer_assign[BUF_SIZE];
-L10:	float buffer_cost[BUF_SIZE];
-L11:	float buffer_weight[BUF_SIZE];
-L12:	float buffer_coord[BUF_SIZE * DIM];
-L13:	float x_cost[BUF_SIZE];
-
-	memcpy(buffer_work_mem, work_mem, BATCH_SIZE * sizeof(float));
-	memcpy(buffer_switch_membership, switch_membership, BATCH_SIZE * sizeof(char));
-	
-	memcpy(buffer_target, target, DIM * sizeof(float));
-	memcpy(buffer_center_table, center_table, BATCH_SIZE * sizeof(int));
-
-L14:	process:for(int i = 0; i < BATCH_SIZE; i += BUF_SIZE){
+float buffer_target[DIM];
+int buffer_center_table[BATCH_SIZE];
+float buffer_work_mem[BATCH_SIZE];
+char buffer_switch_membership[BATCH_SIZE];
+float buffer_cost_of_opening_x[1];
+int buffer_assign[BUF_SIZE];
+float buffer_cost[BUF_SIZE];
+float buffer_weight[BUF_SIZE];
+float buffer_coord[BUF_SIZE * DIM];
+float x_cost[BUF_SIZE];
+for(int i = 0; i < BATCH_SIZE; i += BUF_SIZE){
 		load(i, coord, weight, cost, assign, buffer_coord, buffer_weight, buffer_cost, buffer_assign);
 		compute(num, i, buffer_coord, buffer_weight, buffer_target, buffer_cost, buffer_assign, 
 				buffer_center_table, buffer_switch_membership, buffer_cost_of_opening_x, buffer_work_mem, x_cost);
 	}
-
-	store(num, numcenter, work_mem, switch_membership, cost_of_opening_x,
-		buffer_work_mem, buffer_switch_membership, buffer_cost_of_opening_x);
-
-	return;
-}
-}
