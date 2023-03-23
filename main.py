@@ -88,7 +88,7 @@ visualize.interactive_svg(
     pca,
     annotations,
     "Encodings after 3D PCA",
-    pjoin(path, 'images', f"PCA{note}.svg")
+    pjoin(path, 'images', f"PCA{note}")
 )
 
 # Apply t-SNE
@@ -98,7 +98,7 @@ visualize.interactive_svg(
     tsne,
     annotations,
     "Encodings after 3D t-SNE",
-    pjoin(path, 'images', f"tSNE{note}.svg")
+    pjoin(path, 'images', f"tSNE{note}")
 )
 
 # Cluster with k-means

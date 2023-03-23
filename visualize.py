@@ -33,7 +33,7 @@ def k_means_plot(k, data, text, title, filepath, show=False):
     if show: plt.show()
 
 
-def interactive_svg(data, text, title, filepath):
+def interactive_svg(data, text, title, filename):
     """ From https://matplotlib.org/stable/gallery/user_interfaces/svg_tooltip_sgskip.html """
 
     ET.register_namespace("", "http://www.w3.org/2000/svg")
@@ -42,17 +42,20 @@ def interactive_svg(data, text, title, filepath):
     # Scatter data in color
     color_scatter = plt.scatter(x, y, c=z)   
     bar = plt.colorbar(color_scatter)
+    plt.grid()
+    plt.title(title)
+    plt.xlabel("Component 1")
+    plt.ylabel("Component 2")
+    bar.ax.set_ylabel("Component 3")
+    # Save a simple pdf plot without clutter
+    plt.savefig(filename + '.pdf', bbox_inches='tight')
+    
     # Scatter data in almost-transparent points to add annotations
     for i, label in enumerate(text):
         scatter = plt.scatter(x[i], y[i], c='b', alpha=0.01)
         annotate = plt.annotate(label, xy=np.array([x[i] + 0.05, y[i] + 0.05]))
         scatter.set_gid(f'point_{i:03d}')
         annotate.set_gid(f'tooltip_{i:03d}')
-    plt.grid()
-    plt.title(title)
-    plt.xlabel("Component 1")
-    plt.ylabel("Component 2")
-    bar.ax.set_ylabel("Component 3")
     # Save the figure in a fake file object
     f = BytesIO()
     plt.savefig(f, format="svg")
@@ -97,4 +100,4 @@ def interactive_svg(data, text, title, filepath):
         """
     # Insert the script at the top of the file and save it.
     tree.insert(0, ET.XML(script))
-    ET.ElementTree(tree).write(filepath)
+    ET.ElementTree(tree).write(filename + '.svg')

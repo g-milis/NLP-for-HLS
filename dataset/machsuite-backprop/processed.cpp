@@ -115,3 +115,40 @@ L38:        for(j = 0; j < possible_outputs; j++){
 for(i=0; i < possible_outputs; i++){
         biases3[i] = (biases3[i]/bias_norm);
     }
+TYPE activations1[nodes_per_layer];
+TYPE activations2[nodes_per_layer];
+TYPE activations3[possible_outputs];
+TYPE dactivations1[nodes_per_layer];
+TYPE dactivations2[nodes_per_layer];
+TYPE dactivations3[possible_outputs];
+TYPE net_outputs[possible_outputs];
+TYPE output_difference[possible_outputs];
+TYPE delta_weights1[input_dimension*nodes_per_layer];
+TYPE delta_weights2[nodes_per_layer*nodes_per_layer];
+TYPE delta_weights3[nodes_per_layer*possible_outputs];
+TYPE oracle_activations1[nodes_per_layer];
+TYPE oracle_activations2[nodes_per_layer];
+for(i=0; i<training_sets; i++){
+L54:        for(j=0;j<nodes_per_layer;j++){
+            activations1[j] = (TYPE)0.0;
+            activations2[j] = (TYPE)0.0;
+            if(j<possible_outputs){
+                activations3[j] = (TYPE)0.0;
+            }
+        }
+        matrix_vector_product_with_bias_input_layer(biases1, weights1, activations1, &training_data[i*input_dimension]);
+        RELU(activations1, dactivations1, nodes_per_layer);
+        matrix_vector_product_with_bias_second_layer(biases2, weights2, activations2, activations1);
+        RELU(activations2, dactivations2, nodes_per_layer);
+        matrix_vector_product_with_bias_output_layer(biases3, weights3, activations3, activations2);
+        RELU(activations3, dactivations3, possible_outputs);
+        soft_max(net_outputs, activations3);
+        take_difference(net_outputs, &training_targets[i*possible_outputs], output_difference, dactivations3);
+        get_delta_matrix_weights3(delta_weights3, output_difference, activations2);
+        get_oracle_activations2(weights3, output_difference, oracle_activations2, dactivations2);
+        get_delta_matrix_weights2(delta_weights2, oracle_activations2, activations1);
+        get_oracle_activations1(weights2, oracle_activations2, oracle_activations1, dactivations1);
+        get_delta_matrix_weights1(delta_weights1, oracle_activations1, &training_data[i*input_dimension]);
+        update_weights(weights1, weights2, weights3, delta_weights1, delta_weights2, delta_weights3, 
+                       biases1, biases2, biases3, oracle_activations1, oracle_activations2, output_difference);
+    }

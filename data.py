@@ -85,7 +85,7 @@ if __name__ == '__main__':
     path = os.path.dirname(os.path.realpath(__file__))
 
     datafiles = [
-        file for file in glob(pjoin(path, 'dataset', '*', '*.cp*'))
+        file for file in glob(pjoin(path, 'dataset', '*', '*.c**'))
         if not file.endswith(('harness.c', 'support.c', 'processed.cpp'))
     ]
 
