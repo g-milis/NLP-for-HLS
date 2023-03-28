@@ -8,6 +8,7 @@ import numpy as np
 from glob import glob
 from os.path import join as pjoin
 from sklearn.manifold import TSNE
+from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from transformers import AutoModel, AutoTokenizer
 
@@ -82,6 +83,25 @@ encodings = np.concatenate(encodings)
 
 
 # Visualize =============================================================================
+def cluster(k, data):
+    """ Applies k-means clustering, returns labels and cetroids. """
+    kmeans = KMeans(n_clusters=k, n_init='auto')
+    labels = kmeans.fit_predict(data)
+    centroids = kmeans.cluster_centers_
+    return labels, centroids
+
+def group_annotations(labels, annotations):
+    """ Groups the names of each benchmark according to clustering labels. """
+    u_labels = np.unique(labels)
+    groups = []
+    for label in u_labels:
+        group = sorted([text for i, text in enumerate(annotations) if labels[i] == label])
+        groups.append(group)
+        print(f"Cluster {label + 1}:")
+        print(*group, sep='\n')
+    return groups
+
+
 # Apply PCA
 pca = PCA(3).fit_transform(encodings).astype('double')
 visualize.interactive_svg(
@@ -102,18 +122,30 @@ visualize.interactive_svg(
 )
 
 # Cluster with k-means
-for k in range(2, 7):
+for k in range(4, 7):
+    print(f"{k}-means clustering:")
+    labels, centroids = cluster(k, pca)
     visualize.k_means_plot(
-        k,
         pca,
+        labels,
+        centroids, 
         annotations,
         f"{k}-means clustering of 3D PCA",
         pjoin(path, 'images', f"PCA_{k}{note}.pdf")
     )
+    print("PCA:")
+    group_annotations(labels, annotations)
+    print()
+
+    labels, centroids = cluster(k, tsne)
     visualize.k_means_plot(
-        k,
         tsne,
+        labels,
+        centroids, 
         annotations,
         f"{k}-means clustering of 3D t-SNE",
         pjoin(path, 'images', f"tSNE_{k}{note}.pdf")
     )
+    print("t-SNE:")
+    group_annotations(labels, annotations)
+    print()

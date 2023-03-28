@@ -3,16 +3,12 @@ import mplcursors
 import numpy as np
 from io import BytesIO
 import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans
 import xml.etree.ElementTree as ET
 
 
-def k_means_plot(k, data, text, title, filepath, show=False):
+def k_means_plot(data, labels, centroids, text, title, filepath, show=False):
     plt.figure()
-    kmeans = KMeans(n_clusters=k, n_init='auto')
-    labels = kmeans.fit_predict(data)
     u_labels = np.unique(labels)
-
     for i in u_labels:
         scatter = plt.scatter(data[labels == i, 0], data[labels == i, 1])
         cursor = mplcursors.cursor(scatter, hover=True)
@@ -22,8 +18,7 @@ def k_means_plot(k, data, text, title, filepath, show=False):
         def on_add(sel):
             sel.annotation.set(text=text[sel.index])
 
-    # Getting the Centroids
-    centroids = kmeans.cluster_centers_
+    # Plotting the Centroids
     plt.scatter(centroids[:, 0], centroids[:, 1], s=100, color='k', marker='P')
     plt.grid()
     plt.title(title)
