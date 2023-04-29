@@ -4,3 +4,4 @@ dataset/**/*.json
 dataset/**/*.h
 dataset/**/harness.c
 dataset/**/*support.c
+test/*
